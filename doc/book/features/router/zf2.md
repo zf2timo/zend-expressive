@@ -18,7 +18,7 @@ If you instantiate it with no arguments, it will create an empty
 use Zend\Expressive\AppFactory;
 use Zend\Expressive\Router\ZendRouter;
 
-$app = AppFactory(null, new ZendRouter());
+$app = AppFactory::create(null, new ZendRouter());
 ```
 
 The `TreeRouteStack` offers some unique features:
@@ -103,10 +103,10 @@ service name `Zend\Expressive\Router\RouterInterface`.
 A factory would look like this:
 
 ```php
-// in src/Application/Container/RouterFactory.php
-namespace Application\Container;
+// in src/App/Container/RouterFactory.php
+namespace App\Container;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Zend\Expressive\Router\ZendRouter;
 
 class RouterFactory
@@ -126,15 +126,15 @@ You would register this with zend-servicemanager using:
 
 ```php
 $container->setFactory(
-    'Zend\Expressive\Router\RouterInterface',
-    'Application\Container\RouterFactory'
+    Zend\Expressive\Router\RouterInterface::class,
+    App\Container\RouterFactory::class
 );
 ```
 
 And in Pimple:
 
 ```php
-$pimple['Zend\Expressive\Router\RouterInterface'] = new Application\Container\RouterFactory();
+$pimple[Zend\Expressive\Router\RouterInterface::class] = new Application\Container\RouterFactory();
 ```
 
 For zend-servicemanager, you can omit the factory entirely, and register the
@@ -142,8 +142,8 @@ class as an invokable:
 
 ```php
 $container->setInvokableClass(
-    'Zend\Expressive\Router\RouterInterface',
-    'Zend\Expressive\Router\ZendRouter'
+    Zend\Expressive\Router\RouterInterface::class,
+    Zend\Expressive\Router\ZendRouter::class
 );
 ```
 
@@ -161,10 +161,10 @@ example, we will be defining two factories:
 Sound difficult? It's not; we've essentially done it above already!
 
 ```php
-// in src/Application/Container/TreeRouteStackFactory.php:
-namespace Application\Container;
+// in src/App/Container/TreeRouteStackFactory.php:
+namespace App\Container;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Zend\Http\Mvc\Router\TreeRouteStack;
 
 class TreeRouteStackFactory
@@ -183,10 +183,10 @@ class TreeRouteStackFactory
     }
 }
 
-// in src/Application/Container/RouterFactory.php
-namespace Application\Container;
+// in src/App/Container/RouterFactory.php
+namespace App\Container;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Zend\Expressive\Router\ZendRouter as Zf2Bridge;
 
 class RouterFactory
@@ -197,7 +197,7 @@ class RouterFactory
      */
     public function __invoke(ContainerInterface $container)
     {
-        return new Zf2Bridge($container->get('Zend\Mvc\Router\Http\TreeRouteStack'));
+        return new Zf2Bridge($container->get(Zend\Mvc\Router\Http\TreeRouteStack::class));
     }
 }
 ```
@@ -212,19 +212,19 @@ use Zend\ServiceManager\ServiceManager;
 
 $container = new ServiceManager();
 $container->addFactory(
-    'Zend\Mvc\Router\Http\TreeRouteStack',
-    'Application\Container\TreeRouteStackFactory'
+    Zend\Mvc\Router\Http\TreeRouteStack::class,
+    App\Container\TreeRouteStackFactory::class
 );
 $container->addFactory(
-    'Zend\Expressive\Router\RouterInterface',
-    'Application\Container\RouterFactory'
+    Zend\Expressive\Router\RouterInterface::class,
+    App\Container\RouterFactory::class
 );
 
 // Alternately, via configuration:
 return [
     'factories' => [
-        'Zend\Mvc\Router\Http\TreeRouteStack' => 'Application\Container\TreeRouteStackFactory',
-        'Zend\Expressive\Router\RouterInterface' => 'Application\Container\RouterFactory',
+        Zend\Mvc\Router\Http\TreeRouteStack::class => App\Container\TreeRouteStackFactory::class,
+        Zend\Expressive\Router\RouterInterface::class => App\Container\RouterFactory::class,
     ],
 ];
 ```
@@ -237,6 +237,6 @@ use Application\Container\ZfRouterFactory;
 use Interop\Container\Pimple\PimpleInterop;
 
 $container = new PimpleInterop();
-$container['Zend\Mvc\Router\Http\TreeRouteStackFactory'] = new TreeRouteStackFactory();
-$container['Zend\Expressive\Router\RouterInterface'] = new RouterFactory();
+$container[Zend\Mvc\Router\Http\TreeRouteStackFactory::class] = new TreeRouteStackFactory();
+$container[Zend\Expressive\Router\RouterInterface::class] = new RouterFactory();
 ```
